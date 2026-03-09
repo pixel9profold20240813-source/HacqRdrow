@@ -3,23 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HacqR 抽獎助手</title>
+    <title>HacqR 抽獎助手 - 會員加成專業版</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
+        body { font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-900 antialiased">
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useMemo } = React;
-        const { Search, Gift, Users, Star, AlertCircle, Loader2, Youtube, Trophy, FileText, CheckCircle2 } = lucide;
+        const { useState, useMemo, useEffect, useRef } = React;
+
+        // 安全的 Lucide 圖標組件，防止渲染崩潰
+        const Icon = ({ name, size = 20, className = "" }) => {
+            const iconRef = useRef(null);
+            useEffect(() => {
+                if (window.lucide && iconRef.current) {
+                    window.lucide.createIcons({
+                        targets: [iconRef.current]
+                    });
+                }
+            }, [name]);
+            return <i ref={iconRef} data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
+        };
 
         function App() {
-            // 建議將 API Key 改為空字串，讓使用者輸入
-            const [apiKey, setApiKey] = useState(''); 
+            const [apiKey, setApiKey] = useState('AIzaSyAYQnHhRUEewqTVDZmeTxV6hRXZFt_ZWtY');
             const [videoUrl, setVideoUrl] = useState('');
             const [comments, setComments] = useState([]);
             const [loading, setLoading] = useState(false);
@@ -27,68 +47,117 @@
             const [isDrawing, setIsDrawing] = useState(false);
             const [error, setError] = useState(null);
             const [progress, setProgress] = useState(0);
+
+            // 會員名單狀態
             const [members, setMembers] = useState([]);
             const [keyword, setKeyword] = useState('');
 
+            // 解析影片 ID
             const extractVideoId = (url) => {
                 const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
                 const match = url.match(regExp);
                 return (match && match[7].length === 11) ? match[7] : null;
             };
 
+            // 處理 CSV 檔案上傳
             const handleFileUpload = (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
+
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     const text = event.target.result;
                     const rows = text.split('\n');
+                    // 第一欄是會員名稱，跳過標題列
                     const extractedMembers = rows.slice(1)
                         .map(row => row.split(',')[0].replace(/"/g, '').trim())
                         .filter(name => name.length > 0);
+                    
                     setMembers(extractedMembers);
                 };
                 reader.readAsText(file);
             };
 
+            // 抓取留言 (含回覆)
             const fetchAllComments = async () => {
                 const videoId = extractVideoId(videoUrl);
-                if (!videoId || !apiKey) {
-                    alert(!apiKey ? "請確認 API 金鑰" : "請輸入正確的影片網址");
+                if (!videoId) {
+                    alert("請輸入正確的 YouTube 影片網址");
                     return;
                 }
+
                 setLoading(true);
+                setError(null);
+                setComments([]);
                 let allComments = [];
                 let nextPageToken = '';
+
                 try {
                     do {
-                        const response = await fetch(`https://www.googleapis.com/youtube/v3/commentThreads?part=snippet,replies&videoId=${videoId}&maxResults=100&pageToken=${nextPageToken}&key=${apiKey}`);
+                        const response = await fetch(
+                            `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet,replies&videoId=${videoId}&maxResults=100&pageToken=${nextPageToken}&key=${apiKey}`
+                        );
                         const data = await response.json();
                         if (data.error) throw new Error(data.error.message);
+
                         data.items.forEach(item => {
                             const mainSnippet = item.snippet.topLevelComment.snippet;
-                            allComments.push({ id: item.id, author: mainSnippet.authorDisplayName, authorId: mainSnippet.authorChannelId.value, text: mainSnippet.textDisplay, avatar: mainSnippet.authorProfileImageUrl });
+                            allComments.push({
+                                id: item.id,
+                                author: mainSnippet.authorDisplayName,
+                                authorId: mainSnippet.authorChannelId.value,
+                                text: mainSnippet.textDisplay,
+                                avatar: mainSnippet.authorProfileImageUrl
+                            });
+
                             if (item.replies && item.replies.comments) {
                                 item.replies.comments.forEach(reply => {
-                                    allComments.push({ id: reply.id, author: reply.snippet.authorDisplayName, authorId: reply.snippet.authorChannelId.value, text: reply.snippet.textDisplay, avatar: reply.snippet.authorProfileImageUrl, isReply: true });
+                                    const replySnippet = reply.snippet;
+                                    allComments.push({
+                                        id: reply.id,
+                                        author: replySnippet.authorDisplayName,
+                                        authorId: replySnippet.authorChannelId.value,
+                                        text: replySnippet.textDisplay,
+                                        avatar: replySnippet.authorProfileImageUrl,
+                                        isReply: true
+                                    });
                                 });
                             }
                         });
+
                         nextPageToken = data.nextPageToken || '';
                         setComments([...allComments]);
                         setProgress(allComments.length);
                     } while (nextPageToken);
-                } catch (err) { alert("連線失敗：" + err.message); } finally { setLoading(false); }
+                } catch (err) {
+                    alert("抓取失敗：" + err.message);
+                } finally {
+                    setLoading(false);
+                }
             };
 
+            // 計算抽獎池邏輯
             const lotteryPool = useMemo(() => {
                 const pool = [];
                 const seenUsers = new Set();
+
                 comments.forEach(c => {
+                    // 關鍵字過濾
                     if (keyword && !c.text.toLowerCase().includes(keyword.toLowerCase())) return;
+
+                    // 精準比對會員名稱
                     const isMember = members.includes(c.author);
-                    if (isMember) { pool.push({ ...c, isMember: true }); } 
-                    else if (!seenUsers.has(c.authorId)) { seenUsers.add(c.authorId); pool.push({ ...c, isMember: false }); }
+
+                    if (isMember) {
+                        // 會員：每一則留言都算一次機會 (不限次數)
+                        pool.push({ ...c, isMember: true });
+                    } else {
+                        // 非會員：排除重複，每人僅限一次
+                        if (!seenUsers.has(c.authorId)) {
+                            seenUsers.add(c.authorId);
+                            pool.push({ ...c, isMember: false });
+                        }
+                    }
                 });
                 return pool;
             }, [comments, keyword, members]);
@@ -98,32 +167,138 @@
                 setIsDrawing(true);
                 let count = 0;
                 const timer = setInterval(() => {
-                    setWinner(lotteryPool[Math.floor(Math.random() * lotteryPool.length)]);
+                    const randomIndex = Math.floor(Math.random() * lotteryPool.length);
+                    setWinner(lotteryPool[randomIndex]);
                     count++;
-                    if (count > 30) { clearInterval(timer); setIsDrawing(false); }
+                    if (count > 30) {
+                        clearInterval(timer);
+                        setIsDrawing(false);
+                    }
                 }, 80);
             };
 
             return (
-                <div className="min-h-screen bg-slate-50 p-4 md:p-8 text-slate-900">
+                <div className="min-h-screen p-4 md:p-8">
                     <div className="max-w-6xl mx-auto">
-                        <header className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
+                        
+                        <header className="bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-100 mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
                             <div className="flex items-center gap-4">
-                                <div className="bg-red-50 p-3 rounded-2xl"><Youtube className="text-red-600" size={40} /></div>
+                                <div className="bg-red-50 p-3 rounded-2xl">
+                                    <Icon name="youtube" size={40} className="text-red-600" />
+                                </div>
                                 <div>
                                     <h1 className="text-2xl font-black">HacqR 抽獎助手</h1>
-                                    <p className="text-slate-400 text-sm font-medium italic">支援 CSV 會員清單自動比對</p>
+                                    <p className="text-slate-400 text-sm font-bold tracking-tight italic">CSV 會員名單自動加成版</p>
                                 </div>
                             </div>
+                            
                             <div className="flex gap-6">
-                                <div className="text-center"><p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">已載入會員</p><p className="text-2xl font-black text-blue-600">{members.length}</p></div>
-                                <div className="text-center"><p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">有效留言</p><p className="text-2xl font-black text-red-600">{lotteryPool.length}</p></div>
+                                <div className="text-center">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">已載入會員</p>
+                                    <p className="text-2xl font-black text-blue-600">{members.length}</p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">有效名額</p>
+                                    <p className="text-2xl font-black text-red-600">{lotteryPool.length}</p>
+                                </div>
                             </div>
                         </header>
-                        
+
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                           {/* 您的其餘介面代碼保持不變，貼在這裡即可 */}
-                           {/* (為節省版面，請將原代碼中的 <div className="lg:col-span-4..."> 到最後的 </div> 複製貼上於此) */}
+                            {/* 左側：設定控制台 */}
+                            <div className="lg:col-span-4 space-y-6">
+                                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                    <h3 className="font-bold flex items-center gap-2 mb-4 text-blue-600">
+                                        <Icon name="file-text" /> 1. 上傳會員名單
+                                    </h3>
+                                    <div className="relative group">
+                                        <input 
+                                            type="file" 
+                                            accept=".csv" 
+                                            onChange={handleFileUpload}
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                        />
+                                        <div className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors ${members.length > 0 ? 'bg-blue-50 border-blue-300' : 'border-slate-200 group-hover:border-blue-400'}`}>
+                                            <p className="text-sm text-slate-500 font-bold">{members.length > 0 ? `✅ 已成功匯入 ${members.length} 人` : "點擊上傳會員 CSV"}</p>
+                                            <p className="text-[10px] text-slate-400 mt-1">（YouTube Studio 下載的檔案）</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                    <h3 className="font-bold flex items-center gap-2 mb-4 text-red-600">
+                                        <Icon name="video" /> 2. 同步影片留言
+                                    </h3>
+                                    <div className="space-y-4">
+                                        <input 
+                                            type="text" 
+                                            placeholder="請貼上影片網址"
+                                            value={videoUrl}
+                                            onChange={(e) => setVideoUrl(e.target.value)}
+                                            className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-red-500 border border-slate-100 font-medium"
+                                        />
+                                        <button 
+                                            onClick={fetchAllComments}
+                                            disabled={loading || !videoUrl}
+                                            className="w-full bg-red-600 text-white py-4 rounded-xl font-black shadow-lg shadow-red-50 active:scale-95 transition-transform disabled:bg-slate-200 flex items-center justify-center gap-2"
+                                        >
+                                            {loading ? <Icon name="loader-2" className="animate-spin" /> : "同步 YouTube 留言"}
+                                        </button>
+                                        {loading && <p className="text-[10px] text-center text-slate-400 font-bold tracking-widest">抓取進度: {progress} 則...</p>}
+                                    </div>
+                                </div>
+
+                                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm font-bold">
+                                    <h3 className="flex items-center gap-2 mb-4 text-purple-600">
+                                        <Icon name="search" /> 3. 關鍵字過濾
+                                    </h3>
+                                    <input 
+                                        type="text" 
+                                        placeholder="留言需包含特定文字 (選填)"
+                                        value={keyword}
+                                        onChange={(e) => setKeyword(e.target.value)}
+                                        className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none border border-slate-100 focus:ring-2 focus:ring-purple-500"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* 右側：開獎大舞台 */}
+                            <div className="lg:col-span-8 flex flex-col gap-6">
+                                <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-xl border border-slate-50 text-center flex-1 flex flex-col justify-center items-center min-h-[550px] relative overflow-hidden">
+                                    {winner ? (
+                                        <div className={`transition-all duration-500 ${isDrawing ? 'scale-90 opacity-30 blur-md' : 'scale-100 animate-in zoom-in-95'}`}>
+                                            <div className="relative inline-block mb-8">
+                                                <img src={winner.avatar} className="w-40 h-40 md:w-56 md:h-56 rounded-full border-[10px] border-white shadow-2xl mx-auto" alt="頭像" />
+                                                {winner.isMember && (
+                                                    <div className="absolute top-0 right-0 bg-yellow-400 p-4 rounded-full shadow-lg border-4 border-white animate-bounce">
+                                                        <Icon name="star" size={36} className="text-white fill-current" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <h2 className="text-4xl md:text-6xl font-black text-slate-800 mb-6 truncate max-w-lg mx-auto">{winner.author}</h2>
+                                            <div className="max-w-xl mx-auto bg-slate-50 p-6 md:p-10 rounded-[2.5rem] border border-slate-100 italic text-slate-500 text-xl md:text-2xl shadow-inner leading-relaxed">
+                                                "{winner.text}"
+                                            </div>
+                                            {winner.isMember && <p className="mt-6 text-yellow-600 font-black tracking-widest uppercase text-sm">★ 頻道會員加成中 ★</p>}
+                                        </div>
+                                    ) : (
+                                        <div className="text-slate-100 flex flex-col items-center">
+                                            <Icon name="trophy" size={200} strokeWidth={0.5} />
+                                            <p className="text-slate-300 font-black text-2xl mt-8 tracking-widest uppercase">等待開獎舞台</p>
+                                        </div>
+                                    )}
+
+                                    <div className="mt-16 w-full max-w-sm">
+                                        <button 
+                                            onClick={draw}
+                                            disabled={lotteryPool.length === 0 || isDrawing}
+                                            className="w-full bg-slate-900 text-white py-6 rounded-3xl text-3xl font-black shadow-2xl hover:bg-black active:scale-95 transition-all disabled:bg-slate-100 disabled:text-slate-300"
+                                        >
+                                            {isDrawing ? "選拔中..." : "開始抽獎"}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -135,3 +310,4 @@
     </script>
 </body>
 </html>
+
