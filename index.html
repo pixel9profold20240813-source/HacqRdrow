@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;900&display=swap');
         
         body {
             font-family: 'Noto+Sans+TC', sans-serif;
@@ -26,12 +26,13 @@
             box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1);
         }
 
+        /* 中獎特效 */
         .winner-pop {
-            animation: winnerPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            animation: winnerPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
 
         @keyframes winnerPop {
-            0% { transform: scale(0.8); opacity: 0; }
+            0% { transform: scale(0.7); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
 
@@ -47,6 +48,13 @@
 
         @keyframes spin {
             to { transform: rotate(360deg); }
+        }
+
+        /* 留言文字強化 */
+        #winnerComment {
+            font-weight: 900;
+            line-height: 1.4;
+            color: #1e293b;
         }
     </style>
 </head>
@@ -100,30 +108,33 @@
         </div>
 
         <!-- 右側抽獎展示區 -->
-        <div class="flex-1 main-display p-8 md:p-12 flex flex-col items-center justify-center min-h-[600px] relative overflow-hidden">
+        <div class="flex-1 main-display p-8 md:p-12 flex flex-col items-center justify-center min-h-[600px] relative overflow-hidden bg-white">
             
             <div id="winnerContainer" class="w-full flex flex-col items-center justify-center flex-1">
                 <!-- 初始狀態 -->
                 <div id="idleState" class="text-center">
-                    <div class="w-32 h-32 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <i class="fa-solid fa-gift text-gray-300 text-5xl"></i>
+                    <div class="w-32 h-32 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fa-solid fa-gift text-gray-200 text-5xl"></i>
                     </div>
                     <h2 class="text-gray-400 text-xl font-medium">準備好就開始抽獎吧！</h2>
                 </div>
 
                 <!-- 中獎展示 -->
                 <div id="winnerResult" class="hidden w-full text-center winner-pop">
-                    <div class="relative inline-block mb-6">
+                    <div class="relative inline-block mb-8">
                         <img id="winnerImg" src="" class="w-48 h-48 rounded-full border-8 border-white shadow-2xl object-cover mx-auto bg-gray-200">
-                        <div id="memberTag" class="absolute -bottom-2 right-4 bg-yellow-400 text-black font-black text-xs px-3 py-1 rounded-full shadow-md hidden">
+                        <div id="memberTag" class="absolute -bottom-2 right-4 bg-yellow-400 text-black font-black text-sm px-4 py-1.5 rounded-full shadow-lg hidden">
                             <i class="fa-solid fa-crown mr-1"></i>頻道會員
                         </div>
                     </div>
-                    <h3 id="winnerName" class="text-4xl font-black text-gray-800 mb-4 break-all"></h3>
-                    <div class="max-w-2xl mx-auto bg-gray-50 p-8 rounded-3xl border border-gray-100 relative">
-                        <i class="fa-solid fa-quote-left absolute top-4 left-6 text-gray-200 text-3xl"></i>
-                        <p id="winnerComment" class="text-lg text-gray-600 italic leading-relaxed"></p>
-                        <i class="fa-solid fa-quote-right absolute bottom-4 right-6 text-gray-200 text-3xl"></i>
+                    
+                    <h3 id="winnerName" class="text-4xl font-black text-slate-800 mb-6 break-all"></h3>
+                    
+                    <!-- 留言內容強化區塊 -->
+                    <div class="max-w-3xl mx-auto bg-slate-50 p-10 rounded-[40px] border border-slate-100 relative shadow-inner">
+                        <i class="fa-solid fa-quote-left absolute top-6 left-8 text-slate-200 text-5xl"></i>
+                        <p id="winnerComment" class="text-3xl md:text-4xl break-words relative z-10"></p>
+                        <i class="fa-solid fa-quote-right absolute bottom-6 right-8 text-slate-200 text-5xl"></i>
                     </div>
                 </div>
             </div>
@@ -244,7 +255,7 @@
             }
         }
 
-        // 3. 計算抽獎池 (核心邏輯)
+        // 3. 計算抽獎池
         function calculatePool() {
             const keyword = document.getElementById('keyword').value.trim().toLowerCase();
             const filtered = keyword ? rawComments.filter(c => c.text.toLowerCase().includes(keyword)) : rawComments;
@@ -255,10 +266,8 @@
             filtered.forEach(c => {
                 const isMember = memberIds.has(c.id);
                 if (isMember) {
-                    // 會員：每一則留言都計入 (無限刷)
                     finalPool.push({ ...c, isMember: true });
                 } else {
-                    // 一般用戶：自動去重
                     if (!uniqueUsers.has(c.id)) {
                         uniqueUsers.add(c.id);
                         finalPool.push({ ...c, isMember: false });
@@ -271,7 +280,7 @@
 
         // 4. 開始抽獎
         document.getElementById('drawBtn').addEventListener('click', () => {
-            calculatePool(); // 抽之前再確認一次過濾條件
+            calculatePool();
             if (finalPool.length === 0) {
                 showMsg('抽獎池目前沒有符合條件的人選！');
                 return;
@@ -304,7 +313,7 @@
 
             if (isFinal) {
                 resultDiv.classList.remove('winner-pop');
-                void resultDiv.offsetWidth; // 重發動畫
+                void resultDiv.offsetWidth; 
                 resultDiv.classList.add('winner-pop');
             }
 
