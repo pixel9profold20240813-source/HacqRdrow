@@ -128,10 +128,16 @@
                     
                     <h3 id="winnerName" class="text-4xl font-black text-slate-800 mb-2 break-all"></h3>
                     
-                    <!-- 按讚數顯示 -->
-                    <div class="flex items-center justify-center gap-2 mb-6 text-slate-400 font-bold">
-                        <i class="fa-regular fa-thumbs-up"></i>
-                        <span id="winnerLikes">0</span> 次贊
+                    <!-- 數據顯示 (讚數與回覆) -->
+                    <div class="flex items-center justify-center gap-6 mb-6 text-slate-400 font-bold">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-regular fa-thumbs-up"></i>
+                            <span id="winnerLikes">0</span> 次贊
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="fa-regular fa-comment-dots"></i>
+                            <span id="winnerReplies">0</span> 則回覆
+                        </div>
                     </div>
                     
                     <!-- 留言內容區塊 -->
@@ -216,13 +222,15 @@
                     if (!data.items) break;
 
                     data.items.forEach(item => {
-                        const c = item.snippet.topLevelComment.snippet;
+                        const snippet = item.snippet;
+                        const c = snippet.topLevelComment.snippet;
                         rawComments.push({
                             id: c.authorChannelId.value,
                             name: c.authorDisplayName,
                             img: c.authorProfileImageUrl,
                             text: c.textOriginal,
-                            likeCount: c.likeCount || 0
+                            likeCount: c.likeCount || 0,
+                            replyCount: snippet.totalReplyCount || 0 // 抓取總回覆數
                         });
                     });
 
@@ -326,6 +334,7 @@
             document.getElementById('winnerName').innerText = winner.name;
             document.getElementById('winnerComment').innerText = winner.text;
             document.getElementById('winnerLikes').innerText = winner.likeCount.toLocaleString();
+            document.getElementById('winnerReplies').innerText = winner.replyCount.toLocaleString(); // 顯示回覆數
             
             const tag = document.getElementById('memberTag');
             winner.isMember ? tag.classList.remove('hidden') : tag.classList.add('hidden');
