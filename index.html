@@ -7,11 +7,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* 引入 Google Noto Sans TC 作為 Windows 端的圓潤字體備援 */
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
         
         body {
-            font-family: 'Noto+Sans+TC', 'Roboto', sans-serif;
+            /* 優先調用 PingFang，Windows 端會自動回退到 Noto Sans TC */
+            font-family: "PingFang TC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans TC", "Roboto", sans-serif;
             background-color: #f1f5f9;
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
         .sidebar-card {
@@ -25,73 +30,112 @@
             background: white;
             border-radius: 24px;
             box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
-        /* YouTube 留言風格模擬 */
-        .yt-comment-layout {
+        /* 留言顯示區域容器 */
+        #winnerContainer {
+            flex: 1;
             display: flex;
-            gap: 20px;
+            align-items: center;
+            justify-content: center;
             width: 100%;
-            max-width: 850px; /* 稍微加大容器 */
-            text-align: left;
+            padding: 3rem;
+            position: relative;
+        }
+
+        /* YouTube 經典原版樣式 - 透過 EM 單位同步縮放 */
+        .yt-comment-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8em;
+            width: 100%;
+            max-width: 92%;
+            margin: 0 auto;
+            transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+            font-size: 16px; 
         }
 
         .yt-avatar {
-            width: 64px; /* 頭像放大 */
-            height: 64px;
+            width: 2.5em;
+            height: 2.5em;
             border-radius: 50%;
             flex-shrink: 0;
             object-fit: cover;
+            border: 0.5px solid #eee;
+        }
+
+        .yt-content {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .yt-header {
+            display: flex;
+            align-items: center;
+            gap: 0.4em;
+            margin-bottom: 0.15em;
         }
 
         .yt-author {
             font-weight: 500;
-            font-size: 16px; /* 姓名稍微放大 */
+            font-size: 0.82em;
             color: #0f0f0f;
+            letter-spacing: -0.01em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .yt-time {
-            font-size: 14px;
+            font-size: 0.75em;
             color: #606060;
-            margin-left: 6px;
+            flex-shrink: 0;
+            font-weight: 400;
         }
 
         .yt-text {
-            font-size: 28px; /* 留言內容大幅度放大 */
-            line-height: 1.3;
+            font-size: 0.88em;
+            line-height: 1.45em;
             color: #0f0f0f;
-            font-weight: 700;
-            margin-top: 6px;
             word-break: break-word;
-            letter-spacing: -0.5px;
+            white-space: pre-wrap;
+            letter-spacing: 0.01em;
+            font-weight: 400;
         }
 
         .yt-actions {
             display: flex;
             align-items: center;
-            gap: 20px;
-            margin-top: 16px;
+            gap: 1.2em;
+            margin-top: 0.6em;
             color: #0f0f0f;
         }
 
         .yt-icon-btn {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 15px;
+            gap: 0.5em;
+            font-size: 0.72em;
         }
 
         .yt-icon-btn i {
-            font-size: 22px; /* 圖示放大 */
+            font-size: 1.3em;
         }
 
         .winner-pop {
-            animation: winnerPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            animation: winnerFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        @keyframes winnerPop {
-            0% { transform: scale(0.9); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+        @keyframes winnerFadeIn {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
 
         .loading-ring {
@@ -101,7 +145,7 @@
             border: 3px solid rgba(255,255,255,.3);
             border-radius: 50%;
             border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
+            animation: spin 1s linear infinite;
         }
 
         @keyframes spin {
@@ -109,28 +153,28 @@
         }
     </style>
 </head>
-<body class="p-4 md:p-8">
-    <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
+<body class="p-4 md:p-6 h-screen">
+    <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6 h-full">
         
-        <!-- 左側設定 -->
-        <div class="w-full lg:w-80 flex flex-col gap-6">
-            <div class="sidebar-card p-6">
-                <div class="flex items-center gap-2 mb-4 text-blue-500 font-bold">
+        <!-- 左側設定區 -->
+        <div class="w-full lg:w-80 flex flex-col gap-4 overflow-y-auto pr-1">
+            <div class="sidebar-card p-5">
+                <div class="flex items-center gap-2 mb-3 text-blue-500 font-bold">
                     <i class="fa-regular fa-file-lines"></i>
                     <span>1. 上傳會員名單</span>
                 </div>
                 <label class="block w-full">
-                    <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 hover:border-blue-400 transition-all cursor-pointer bg-gray-50 text-center">
-                        <i class="fa-solid fa-cloud-arrow-up text-gray-400 mb-2 text-xl"></i>
-                        <p class="text-xs text-gray-500">點擊上傳 CSV 檔案</p>
+                    <div class="border-2 border-dashed border-gray-200 rounded-xl p-3 hover:border-blue-400 transition-all cursor-pointer bg-gray-50 text-center">
+                        <i class="fa-solid fa-cloud-arrow-up text-gray-400 mb-1 text-lg"></i>
+                        <p class="text-[10px] text-gray-500">點擊上傳 CSV 檔案</p>
                         <input type="file" id="csvFile" class="hidden" accept=".csv">
                     </div>
                 </label>
                 <p id="memberStatus" class="mt-2 text-[11px] text-green-600 font-medium hidden"></p>
             </div>
 
-            <div class="sidebar-card p-6">
-                <div class="flex items-center gap-2 mb-4 text-red-500 font-bold">
+            <div class="sidebar-card p-5">
+                <div class="flex items-center gap-2 mb-3 text-red-500 font-bold">
                     <i class="fa-brands fa-youtube"></i>
                     <span>2. 抓取影片留言</span>
                 </div>
@@ -138,37 +182,37 @@
                     class="w-full px-3 py-2 bg-gray-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-red-400 outline-none mb-3">
                 
                 <button id="fetchBtn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2">
-                    <span id="fetchBtnText">同步留言</span>
+                    <span id="fetchBtnText">同步 YouTube 留言</span>
                     <div id="fetchLoading" class="loading-ring hidden"></div>
                 </button>
                 <p id="fetchStatus" class="mt-2 text-[11px] text-gray-400 font-medium text-center"></p>
             </div>
 
-            <div class="sidebar-card p-6">
-                <div class="flex items-center gap-2 mb-4 text-purple-500 font-bold">
+            <div class="sidebar-card p-5">
+                <div class="flex items-center gap-2 mb-3 text-purple-500 font-bold">
                     <i class="fa-solid fa-filter"></i>
                     <span>3. 其他篩選</span>
                 </div>
-                <input type="text" id="keyword" placeholder="包含關鍵字 (選填)" 
+                <input type="text" id="keyword" placeholder="留言關鍵字 (選填)" 
                     class="w-full px-3 py-2 bg-gray-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-purple-400 outline-none">
             </div>
         </div>
 
-        <!-- 右側展示區 -->
-        <div class="flex-1 main-display p-8 md:p-12 flex flex-col items-center justify-center min-h-[600px] bg-white">
-            <div id="winnerContainer" class="w-full flex items-center justify-center flex-1 px-4">
+        <!-- 右側開獎展示區 -->
+        <div class="flex-1 main-display p-6">
+            <div id="winnerContainer">
                 <div id="idleState" class="text-center">
-                    <div class="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fa-solid fa-gift text-gray-200 text-4xl"></i>
+                    <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-gift text-gray-200 text-2xl"></i>
                     </div>
-                    <p class="text-gray-400 font-bold">同步留言後即可開始抽獎</p>
+                    <p class="text-gray-400 font-bold text-sm">同步留言後即可開始抽獎</p>
                 </div>
 
-                <!-- YT 樣式 (放大版) -->
-                <div id="winnerResult" class="hidden winner-pop yt-comment-layout">
-                    <img id="winnerImg" src="" class="yt-avatar shadow-sm">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2">
+                <!-- YT 顯示容器 -->
+                <div id="winnerResult" class="hidden yt-comment-wrapper">
+                    <img id="winnerImg" src="" class="yt-avatar">
+                    <div class="yt-content">
+                        <div class="yt-header">
                             <span id="winnerName" class="yt-author"></span>
                             <span id="winnerTime" class="yt-time"></span>
                         </div>
@@ -181,24 +225,25 @@
                             <div class="yt-icon-btn">
                                 <i class="fa-regular fa-thumbs-down"></i>
                             </div>
-                            <div class="yt-icon-btn font-medium ml-2">
-                                回覆 <span id="winnerReplies" class="ml-1">0</span>
-                            </div>
+                            <div class="yt-icon-btn font-medium">回覆</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="w-full max-w-sm mt-8 border-t pt-8">
-                <button id="drawBtn" class="w-full bg-slate-900 hover:bg-black text-white font-black py-5 rounded-3xl text-xl shadow-xl transition-all active:scale-95 disabled:opacity-30">
-                    開始抽獎
-                </button>
-                <p id="poolInfo" class="text-center mt-4 text-[11px] text-gray-400 font-bold uppercase tracking-widest"></p>
+            <!-- 底端控制區 -->
+            <div class="mt-auto pt-6 flex flex-col items-center">
+                <div class="w-full max-w-sm">
+                    <button id="drawBtn" class="w-full bg-slate-900 hover:bg-black text-white font-black py-4 rounded-2xl text-xl shadow-xl transition-all active:scale-95 disabled:opacity-30">
+                        開始抽獎
+                    </button>
+                    <p id="poolInfo" class="text-center mt-3 text-[11px] text-gray-400 font-bold uppercase tracking-widest">目前抽獎池：0</p>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Alert Modal -->
     <div id="alertModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
             <p id="alertMsg" class="text-gray-700 font-bold mb-6 text-lg"></p>
@@ -216,7 +261,7 @@
             const date = new Date(dateString);
             const now = new Date();
             const seconds = Math.floor((now - date) / 1000);
-            if (isNaN(seconds)) return "時間未知";
+            if (isNaN(seconds)) return "1 天前";
             let interval = Math.floor(seconds / 31536000);
             if (interval >= 1) return interval + " 年前";
             interval = Math.floor(seconds / 2592000);
@@ -228,6 +273,29 @@
             interval = Math.floor(seconds / 60);
             if (interval >= 1) return interval + " 分鐘前";
             return "幾秒前";
+        }
+
+        // 智慧型字體大小計算 - 確保在大空間中塞滿且不破版
+        function adjustLayoutSize(text) {
+            const containerWidth = document.getElementById('winnerContainer').offsetWidth;
+            const len = text.length;
+            let baseSize = 16; 
+
+            // 根據字數分級，針對短留言給予極大化字體
+            if (len <= 5) baseSize = 58;
+            else if (len <= 15) baseSize = 44;
+            else if (len <= 30) baseSize = 34;
+            else if (len <= 60) baseSize = 26;
+            else baseSize = 20;
+
+            // 針對小螢幕或窄容器進行比例縮減
+            if (containerWidth < 500) {
+                baseSize = baseSize * 0.6;
+            } else if (containerWidth < 800) {
+                baseSize = baseSize * 0.8;
+            }
+
+            return baseSize;
         }
 
         document.getElementById('csvFile').addEventListener('change', (e) => {
@@ -276,7 +344,6 @@
                                 img: c.authorProfileImageUrl,
                                 text: c.textOriginal,
                                 likes: c.likeCount || 0,
-                                replies: s.totalReplyCount || 0,
                                 publishedAt: c.publishedAt
                             });
                         });
@@ -316,7 +383,7 @@
                     finalPool.push(c);
                 }
             });
-            document.getElementById('poolInfo').innerText = finalPool.length ? `目前抽獎池：${finalPool.length}` : '';
+            document.getElementById('poolInfo').innerText = `目前抽獎池：${finalPool.length}`;
         }
 
         document.getElementById('drawBtn').addEventListener('click', () => {
@@ -330,31 +397,36 @@
                 const randomOne = finalPool[Math.floor(Math.random() * finalPool.length)];
                 renderWinner(randomOne, false);
                 count++;
-                if (count > 20) {
+                if (count > 22) {
                     clearInterval(t);
                     const finalWinner = finalPool[Math.floor(Math.random() * finalPool.length)];
                     renderWinner(finalWinner, true);
                     btn.disabled = false;
                     btn.innerText = '開始抽獎';
                 }
-            }, 80);
+            }, 70);
         });
 
         function renderWinner(w, isFinal) {
             document.getElementById('idleState').classList.add('hidden');
             const res = document.getElementById('winnerResult');
             res.classList.remove('hidden');
+            
+            // 透過 font-size 控制整體元件縮放
+            const newFontSize = adjustLayoutSize(w.text);
+            res.style.fontSize = `${newFontSize}px`;
+
             if (isFinal) {
                 res.classList.remove('winner-pop');
-                void res.offsetWidth;
+                void res.offsetWidth; 
                 res.classList.add('winner-pop');
             }
+
             document.getElementById('winnerImg').src = w.img;
             document.getElementById('winnerName').innerText = w.name;
-            document.getElementById('winnerComment').innerText = w.text;
             document.getElementById('winnerLikes').innerText = w.likes;
-            document.getElementById('winnerReplies').innerText = w.replies;
             document.getElementById('winnerTime').innerText = `• ${timeAgo(w.publishedAt)}`;
+            document.getElementById('winnerComment').innerText = w.text;
         }
 
         function showMsg(m) {
