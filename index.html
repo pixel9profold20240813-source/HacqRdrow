@@ -32,7 +32,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            height: 100%; /* 確保主容器撐滿 */
+            height: 100%;
         }
 
         #winnerContainer {
@@ -42,20 +42,19 @@
             justify-content: center;
             width: 100%;
             padding: 2rem;
-            overflow: hidden; /* 防止內容溢出影響按鈕 */
+            overflow: hidden;
         }
 
-        /* 影片預覽封面樣式 */
         #videoPreview {
             width: 100%;
-            max-width: 560px; /* 稍微縮小防止推擠 */
+            max-width: 560px;
             animation: fadeIn 0.5s ease-out;
         }
 
         .thumb-wrapper {
             position: relative;
             width: 100%;
-            padding-top: 56.25%; /* 16:9 */
+            padding-top: 56.25%;
             border-radius: 16px;
             overflow: hidden;
             box-shadow: 0 15px 30px -10px rgba(0,0,0,0.3);
@@ -201,10 +200,9 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* 按鈕區固定在底部 */
         .bottom-control {
             border-top: 1px solid #f1f5f9;
-            padding: 1.5rem;
+            padding: 1.25rem;
             background: white;
         }
     </style>
@@ -256,7 +254,6 @@
 
         <!-- 右側展示區 -->
         <div class="flex-1 main-display">
-            <!-- 內容展示區 -->
             <div id="winnerContainer">
                 <!-- 初始狀態 -->
                 <div id="idleState" class="text-center">
@@ -305,13 +302,16 @@
                 </div>
             </div>
 
-            <!-- 底部控制區：固定在下方 -->
+            <!-- 底部控制區 -->
             <div class="bottom-control flex flex-col items-center">
                 <div class="w-full max-w-sm">
                     <button id="drawBtn" class="w-full bg-slate-900 hover:bg-black text-white font-black py-4 rounded-2xl text-xl shadow-xl transition-all active:scale-95 disabled:opacity-30">
                         開始開獎
                     </button>
-                    <p id="poolInfo" class="text-center mt-3 text-[11px] text-gray-400 font-bold uppercase tracking-widest">抽獎池總數：0</p>
+                    <div class="flex flex-col gap-1 mt-3 text-center">
+                        <p id="poolInfo" class="text-[11px] text-gray-600 font-bold uppercase tracking-widest">抽獎池總數：0</p>
+                        <p id="duplicateInfo" class="text-[10px] text-gray-400 font-medium">已排除重複留言：0</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -392,7 +392,6 @@
             setFetchLoading(true);
             rawComments = [];
             try {
-                // 1. 同步影片封面
                 const videoDataResponse = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${YOUTUBE_API_KEY}`);
                 const videoData = await videoDataResponse.json();
                 if (videoData.items && videoData.items.length > 0) {
@@ -404,7 +403,6 @@
                     showVideoPreview();
                 }
 
-                // 2. 同步留言
                 let pageToken = '';
                 do {
                     const ytApiUrl = `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=100&pageToken=${pageToken}&key=${YOUTUBE_API_KEY}`;
@@ -458,13 +456,19 @@
             const filtered = kw ? rawComments.filter(c => c.text.toLowerCase().includes(kw)) : rawComments;
             const seen = new Set();
             finalPool = [];
+            let duplicateCount = 0;
+
             filtered.forEach(c => {
                 if (!seen.has(c.id)) {
                     seen.add(c.id);
                     finalPool.push(c);
+                } else {
+                    duplicateCount++;
                 }
             });
+            
             document.getElementById('poolInfo').innerText = `抽獎池總數：${finalPool.length}`;
+            document.getElementById('duplicateInfo').innerText = `已排除重複留言：${duplicateCount}`;
         }
 
         document.getElementById('drawBtn').addEventListener('click', () => {
