@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -23,7 +24,6 @@
             border: 1px solid #f1f5f9;
         }
 
-        /* 主顯示區容器 */
         .main-display {
             background: white;
             border-radius: 24px;
@@ -41,29 +41,29 @@
             justify-content: center;
             width: 100%;
             padding: 2rem;
+            overflow: hidden;
             background: #fff;
-            position: relative;
         }
 
-        /* 留言卡片：增加 w-full max-w 並確保 margin auto 解決超模問題 */
+        /* 恢復您滿意的大型卡片佈局 */
         .yt-comment-wrapper {
             display: flex;
             align-items: flex-start;
-            gap: 12px;
+            gap: 1.2em;
             width: 100%;
-            max-width: 600px; /* 固定寬度防止左右飄移 */
+            max-width: 800px;
             background: #ffffff;
-            border-radius: 12px;
-            padding: 16px;
-            transition: transform 0.05s ease-in-out;
-            margin: auto;
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 28px 32px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+            transition: transform 0.05s ease-out;
             position: relative;
-            box-sizing: border-box;
         }
 
-        /* 單純垂直跳動，幅度加大但點位固定 */
+        /* 純垂直跳動，絕不旋轉，不暈眩 */
         .drawing-active {
-            animation: drawBounce 0.1s infinite alternate ease-in-out;
+            animation: drawBounce 0.1s infinite alternate cubic-bezier(0.45, 0.05, 0.55, 0.95);
         }
 
         @keyframes drawBounce {
@@ -77,27 +77,28 @@
         }
 
         .yt-avatar {
-            width: 40px;
-            height: 40px;
+            width: 3.5em;
+            height: 3.5em;
             border-radius: 50%;
             object-fit: cover;
+            border: 2px solid #f1f5f9;
         }
 
-        /* 身份標籤：純放大文字不變 */
+        /* 身份標籤：得獎時顯現，且縮放比例正確 */
         .status-badge {
             position: absolute;
-            bottom: -8px;
+            bottom: -0.4em;
             left: 50%;
-            transform: translateX(-50%) scale(1.5); /* 視覺上放大 */
+            transform: translateX(-50%) scale(1.6);
             color: white;
-            font-size: 8px;
+            font-size: 0.5em;
             font-weight: 900;
-            padding: 2px 8px;
-            border-radius: 12px;
+            padding: 0.25em 1.2em;
+            border-radius: 2em;
             white-space: nowrap;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            border: 1px solid #fff;
-            z-index: 10;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+            border: 1.5px solid #fff;
+            z-index: 20;
         }
 
         .badge-pop-anim {
@@ -106,15 +107,16 @@
 
         @keyframes badgePopFinal {
             0% { transform: translateX(-50%) scale(0); opacity: 0; }
-            100% { transform: translateX(-50%) scale(1.5); opacity: 1; }
+            100% { transform: translateX(-50%) scale(1.6); opacity: 1; }
         }
 
-        .badge-subscribed { background-color: #065fd4; } /* 訂閱藍 */
+        .badge-subscribed { background-color: #2ba640; }
         .badge-vip { background-color: #ffca28; color: #000; }
 
         .yt-content {
             display: flex;
             flex-direction: column;
+            text-align: left;
             flex: 1;
             min-width: 0;
         }
@@ -122,65 +124,63 @@
         .yt-header {
             display: flex;
             align-items: center;
-            gap: 4px;
-            margin-bottom: 2px;
+            gap: 0.6em;
+            margin-bottom: 0.3em;
         }
 
         .yt-author {
-            font-weight: 500;
-            font-size: 13px;
+            font-weight: 700;
+            font-size: 0.95em;
             color: #0f0f0f;
         }
 
-        .yt-time { font-size: 12px; color: #606060; }
+        .yt-time { font-size: 0.8em; color: #606060; }
 
         .yt-text {
-            font-size: 14px;
-            line-height: 20px;
+            font-size: 1.1em;
+            line-height: 1.55em;
             color: #0f0f0f;
             word-break: break-word;
             white-space: pre-wrap;
-            margin: 2px 0 8px 0;
+            font-weight: 500;
+            margin: 8px 0;
             max-height: 200px;
             overflow-y: auto;
         }
 
-        /* 還原 YouTube 按鈕風格與位置 */
         .yt-actions {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 1.5em;
+            margin-top: 0.8em;
             color: #0f0f0f;
         }
 
-        .yt-icon-btn { 
-            display: flex; 
-            align-items: center; 
-            gap: 6px; 
-            font-size: 12px; 
-            cursor: default;
-        }
-        .yt-icon-btn i { font-size: 16px; color: #030303; }
+        .yt-icon-btn { display: flex; align-items: center; gap: 0.5em; font-size: 0.8em; }
+        .yt-icon-btn i { font-size: 1.4em; }
 
-        /* 最終得獎：固定位置不飄移 */
         .winner-final-pop {
-            box-shadow: 0 0 0 2px #ffca28, 0 10px 30px rgba(0,0,0,0.1);
+            animation: winnerScale 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            border-color: #ffca28;
+        }
+
+        @keyframes winnerScale {
+            0% { transform: scale(0.95); }
+            100% { transform: scale(1); }
         }
 
         .bottom-control {
             border-top: 1px solid #f1f5f9;
-            padding: 1.5rem;
+            padding: 1.25rem;
             background: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
 
-        .loading-ring {
-            display: inline-block; width: 18px; height: 18px;
-            border: 2px solid rgba(255,255,255,.3);
-            border-radius: 50%; border-top-color: #fff;
-            animation: spin 1s linear infinite;
+        .loading-spin {
+            width: 1.2em; height: 1.2em;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
@@ -199,7 +199,7 @@
                 <label class="block w-full">
                     <div class="border-2 border-dashed border-gray-200 rounded-xl p-3 hover:border-blue-400 transition-all cursor-pointer bg-gray-50 text-center">
                         <i class="fa-solid fa-file-csv text-gray-400 mb-1 text-lg"></i>
-                        <p class="text-[10px] text-gray-500">上傳 CSV 名單</p>
+                        <p class="text-[10px] text-gray-500">上傳 CSV 會員名單</p>
                         <input type="file" id="csvFile" class="hidden" accept=".csv">
                     </div>
                 </label>
@@ -209,13 +209,13 @@
             <div class="sidebar-card p-5">
                 <div class="flex items-center gap-2 mb-3 text-red-500 font-bold">
                     <i class="fa-brands fa-youtube"></i>
-                    <span>2. 抓取影片留言</span>
+                    <span>2. 影片留言</span>
                 </div>
-                <input type="text" id="videoUrl" placeholder="YouTube 影片網址" 
+                <input type="text" id="videoUrl" placeholder="輸入 YouTube 網址" 
                     class="w-full px-3 py-2 bg-gray-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-red-400 outline-none mb-3">
                 <button id="fetchBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2">
-                    <span id="fetchBtnText">同步留言</span>
-                    <div id="fetchLoading" class="loading-ring hidden"></div>
+                    <span id="fetchBtnText">同步 YouTube 數據</span>
+                    <div id="fetchLoading" class="loading-spin hidden"></div>
                 </button>
                 <p id="fetchStatus" class="mt-2 text-[11px] text-gray-400 font-medium text-center"></p>
             </div>
@@ -223,7 +223,7 @@
             <div class="sidebar-card p-5">
                 <div class="flex items-center gap-2 mb-3 text-purple-500 font-bold">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <span>3. 其他篩選</span>
+                    <span>3. 條件過濾</span>
                 </div>
                 <input type="text" id="keyword" placeholder="包含關鍵字 (選填)" 
                     class="w-full px-3 py-2 bg-gray-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-purple-400 outline-none">
@@ -233,15 +233,13 @@
         <!-- 右側展示區 -->
         <div class="flex-1 main-display">
             <div id="winnerContainer">
-                <!-- 初始狀態 -->
                 <div id="idleState" class="text-center">
                     <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="fa-solid fa-trophy text-gray-200 text-2xl"></i>
                     </div>
-                    <p class="text-gray-400 font-bold text-sm">輸入網址並同步留言</p>
+                    <p class="text-gray-400 font-bold text-sm">請輸入網址並同步留言</p>
                 </div>
 
-                <!-- 抽獎卡片：已優化定位防止超模 -->
                 <div id="winnerResult" class="hidden yt-comment-wrapper">
                     <div class="yt-avatar-container">
                         <img id="winnerImg" src="" class="yt-avatar">
@@ -263,19 +261,19 @@
                 </div>
             </div>
 
-            <div class="bottom-control">
-                <div class="w-full max-w-sm">
-                    <button id="drawBtn" class="w-full bg-slate-900 hover:bg-black text-white font-black py-4 rounded-2xl text-xl shadow-xl transition-all active:scale-95 disabled:opacity-30">
+            <div class="bottom-control flex flex-col items-center">
+                <div class="w-full max-w-sm text-center">
+                    <button id="drawBtn" class="w-full bg-black text-white font-black py-4 rounded-2xl text-xl shadow-xl transition-all active:scale-95 disabled:opacity-30">
                         開始開獎
                     </button>
-                    <p id="poolInfo" class="mt-3 text-[11px] text-gray-500 font-bold text-center uppercase tracking-widest">目前抽獎池：0</p>
+                    <p id="poolInfo" class="mt-3 text-[11px] text-gray-500 font-bold uppercase tracking-widest">抽獎池：0</p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const YOUTUBE_API_KEY = ''; // 系統將提供
+        const API_KEY = 'AIzaSyAYQnHhRUEewqTVDZmeTxV6hRXZFt_ZWtY';
         let rawComments = [];
         let memberIds = new Set();
         let finalPool = [];
@@ -294,11 +292,9 @@
             return "幾分鐘前";
         }
 
-        // 強制解碼頭像確保零延遲
-        async function forcePreloadAvatars(comments) {
+        async function preloadAvatars(comments) {
             const ctx = document.getElementById('preloadCanvas').getContext('2d');
-            const limit = Math.min(comments.length, 300);
-            const promises = comments.slice(0, limit).map(c => {
+            const promises = comments.slice(0, 300).map(c => {
                 return new Promise((resolve) => {
                     const img = new Image();
                     img.crossOrigin = "anonymous";
@@ -326,7 +322,7 @@
                     const match = row.match(/UC[a-zA-Z0-9_-]{22}/);
                     if (match) memberIds.add(match[0]);
                 });
-                document.getElementById('memberStatus').innerText = `✅ 已辨識 ${memberIds.size} 位會員`;
+                document.getElementById('memberStatus').innerText = `✅ 已辨識 ${memberIds.size} 位 VIP 會員`;
                 document.getElementById('memberStatus').classList.remove('hidden');
                 calculatePool();
             };
@@ -337,45 +333,48 @@
             const url = document.getElementById('videoUrl').value.trim();
             const match = url.match(/^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?)|(shorts\/)|(live\/))\??v?=?([^#&?]*).*/);
             const videoId = (match && match[9].length === 11) ? match[9] : null;
-            if (!videoId) return;
+            if (!videoId) return alert('請輸入正確影片網址');
 
-            setFetchLoading(true);
+            setLoading(true);
             rawComments = [];
             imgCache.clear();
 
             try {
                 let pageToken = '';
                 do {
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=`, {
-                        method: 'POST',
-                        body: JSON.stringify({ contents: [{ parts: [{ text: `Fetch YouTube comments for video ${videoId} page ${pageToken}` }] }] })
+                    const res = await fetch(`https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=100&pageToken=${pageToken}&key=${API_KEY}`);
+                    const data = await res.json();
+                    if (data.error) throw new Error(data.error.message);
+                    data.items?.forEach(item => {
+                        const c = item.snippet.topLevelComment.snippet;
+                        rawComments.push({
+                            id: c.authorChannelId.value,
+                            name: c.authorDisplayName,
+                            img: c.authorProfileImageUrl,
+                            text: c.textOriginal,
+                            likes: c.likeCount || 0,
+                            publishedAt: c.publishedAt
+                        });
                     });
-                    // 此處簡化邏輯，實際運作會串接 API
-                    // 模擬數據載入
-                    rawComments = Array.from({length: 100}, (_, i) => ({
-                        id: 'UC' + i,
-                        name: '用戶 ' + i,
-                        img: 'https://i.pravatar.cc/150?u=' + i,
-                        text: '這是第 ' + i + ' 則留言內容！測試超模 Bug。',
-                        likes: Math.floor(Math.random() * 100),
-                        publishedAt: new Date().toISOString()
-                    }));
-                    pageToken = ''; 
+                    pageToken = data.nextPageToken || '';
                 } while (pageToken);
 
                 calculatePool();
-                await forcePreloadAvatars(finalPool);
+                await preloadAvatars(finalPool);
                 document.getElementById('fetchStatus').innerText = `已同步 ${rawComments.length} 則留言`;
+                document.getElementById('idleState').classList.remove('hidden');
+                document.getElementById('winnerResult').classList.add('hidden');
             } catch (e) {
-                console.error(e);
+                alert('抓取失敗：' + e.message);
             } finally {
-                setFetchLoading(false);
+                setLoading(false);
             }
         });
 
-        function setFetchLoading(l) {
+        function setLoading(l) {
             document.getElementById('fetchBtnText').classList.toggle('hidden', l);
             document.getElementById('fetchLoading').classList.toggle('hidden', !l);
+            document.getElementById('fetchBtn').disabled = l;
         }
 
         function calculatePool() {
@@ -386,7 +385,7 @@
             filtered.forEach(c => {
                 if (!seen.has(c.id)) { seen.add(c.id); finalPool.push(c); }
             });
-            document.getElementById('poolInfo').innerText = `目前抽獎池：${finalPool.length}`;
+            document.getElementById('poolInfo').innerText = `抽獎池：${finalPool.length}`;
         }
 
         document.getElementById('drawBtn').addEventListener('click', () => {
@@ -399,10 +398,10 @@
 
             const btn = document.getElementById('drawBtn');
             btn.disabled = true;
-            btn.innerText = '正在尋找幸運兒...';
+            btn.innerText = '正在抽獎...';
 
             const startTime = Date.now();
-            const duration = 2000; 
+            const duration = 2200; 
 
             drawIntervalTimer = setInterval(() => {
                 const randomOne = finalPool[Math.floor(Math.random() * finalPool.length)];
@@ -414,9 +413,9 @@
                     const finalWinner = finalPool[Math.floor(Math.random() * finalPool.length)];
                     renderWinner(finalWinner, true);
                     btn.disabled = false;
-                    btn.innerText = '開始開獎';
+                    btn.innerText = '再次開獎';
                 }
-            }, 80);
+            }, 100);
         });
 
         function renderWinner(w, isFinal) {
@@ -439,7 +438,7 @@
             }
 
             document.getElementById('winnerImg').src = imgCache.get(w.id) || w.img;
-            document.getElementById('winnerName').innerText = '@' + w.name;
+            document.getElementById('winnerName').innerText = w.name;
             document.getElementById('winnerLikes').innerText = w.likes;
             document.getElementById('winnerTime').innerText = `• ${timeAgo(w.publishedAt)}`;
             document.getElementById('winnerComment').innerText = w.text;
@@ -447,3 +446,5 @@
     </script>
 </body>
 </html>
+
+```
