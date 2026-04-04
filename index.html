@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -255,7 +256,6 @@
         <!-- 右側展示區 -->
         <div class="flex-1 main-display">
             <div id="winnerContainer">
-                <!-- 初始狀態 -->
                 <div id="idleState" class="text-center">
                     <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="fa-solid fa-trophy text-gray-200 text-2xl"></i>
@@ -263,7 +263,6 @@
                     <p class="text-gray-400 font-bold text-sm">輸入網址並同步留言</p>
                 </div>
 
-                <!-- 影片封面預覽狀態 -->
                 <div id="videoPreview" class="hidden text-center">
                     <div class="thumb-wrapper mb-4">
                         <img id="videoThumb" src="" class="thumb-img">
@@ -275,7 +274,6 @@
                     </div>
                 </div>
 
-                <!-- 開獎顯示區域 -->
                 <div id="winnerResult" class="hidden yt-comment-wrapper">
                     <div class="yt-avatar-container">
                         <img id="winnerImg" src="" class="yt-avatar">
@@ -480,12 +478,16 @@
             btn.disabled = true;
             btn.innerText = '正在尋找幸運兒...';
 
-            let count = 0;
+            // 修復切換分頁會卡住的問題：改用時間來判斷，不再依賴 setInterval 的執行次數
+            const startTime = Date.now();
+            const duration = 2000; // 動畫持續 2 秒鐘
+
             const t = setInterval(() => {
                 const randomOne = finalPool[Math.floor(Math.random() * finalPool.length)];
                 renderWinner(randomOne, false);
-                count++;
-                if (count > 25) {
+                
+                // 改為檢查真實經過的時間，確保即使瀏覽器暫停計時器也不會卡住
+                if (Date.now() - startTime >= duration) {
                     clearInterval(t);
                     const finalWinner = finalPool[Math.floor(Math.random() * finalPool.length)];
                     renderWinner(finalWinner, true);
@@ -540,3 +542,5 @@
 </body>
 </html>
 
+
+```
