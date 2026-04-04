@@ -46,38 +46,29 @@
             overflow: hidden;
         }
 
-        #videoPreview {
-            width: 100%;
-            max-width: 560px;
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        .thumb-wrapper {
-            position: relative;
-            width: 100%;
-            padding-top: 56.25%;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 15px 30px -10px rgba(0,0,0,0.3);
-            background: #eee;
-        }
-
-        .thumb-img {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            object-fit: cover;
-        }
-
+        /* 留言卡片外框：還原格子設計 */
         .yt-comment-wrapper {
             display: flex;
             align-items: flex-start;
-            gap: 1em;
+            gap: 1.2em;
             width: 100%;
-            max-width: 95%;
-            margin: 0 auto;
-            transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
-            font-size: 16px; 
+            max-width: 800px;
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 28px 32px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+            transition: transform 0.05s ease-out;
+        }
+
+        /* 改為單純的上下跳動，不旋轉 */
+        .drawing-active {
+            animation: drawBounce 0.1s infinite alternate cubic-bezier(0.45, 0.05, 0.55, 0.95);
+        }
+
+        @keyframes drawBounce {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(8px) scale(0.96); } 
         }
 
         .yt-avatar-container {
@@ -86,54 +77,42 @@
         }
 
         .yt-avatar {
-            width: 3.2em;
-            height: 3.2em;
+            width: 3.5em;
+            height: 3.5em;
             border-radius: 50%;
             object-fit: cover;
-            border: 2.5px solid #fff;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            border: 2px solid #f1f5f9;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
         }
 
+        /* 放大身份標示：純放大不改字 */
         .status-badge {
             position: absolute;
-            bottom: -0.25em;
+            bottom: -0.4em;
             left: 50%;
-            transform: translateX(-50%);
+            transform: translateX(-50%) scale(1.6); /* 巨大化標籤 */
             color: white;
-            font-size: 0.48em;
+            font-size: 0.5em;
             font-weight: 900;
-            padding: 0.25em 1em;
+            padding: 0.25em 1.2em;
             border-radius: 2em;
             white-space: nowrap;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.25);
             border: 1.5px solid #fff;
             z-index: 10;
         }
 
         .badge-pop-anim {
-            animation: badgePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            animation: badgePopFinal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
 
-        @keyframes badgePop {
+        @keyframes badgePopFinal {
             0% { transform: translateX(-50%) scale(0); opacity: 0; }
-            100% { transform: translateX(-50%) scale(1); opacity: 1; }
+            100% { transform: translateX(-50%) scale(1.6); opacity: 1; }
         }
 
         .badge-subscribed { background-color: #2ba640; }
-        .badge-vip { 
-            background-color: #ffca28; 
-            color: #000; 
-            transform: translateX(-50%) rotate(-3deg); 
-        }
-
-        .vip-pop-anim {
-            animation: vipPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.5) forwards;
-        }
-
-        @keyframes vipPop {
-            0% { transform: translateX(-50%) scale(0) rotate(0deg); opacity: 0; }
-            100% { transform: translateX(-50%) scale(1) rotate(-3deg); opacity: 1; }
-        }
+        .badge-vip { background-color: #ffca28; color: #000; }
 
         .yt-content {
             display: flex;
@@ -141,55 +120,64 @@
             text-align: left;
             flex: 1;
             min-width: 0;
-            padding-left: 0.6em;
         }
 
         .yt-header {
             display: flex;
             align-items: center;
-            gap: 0.5em;
-            margin-bottom: 0.2em;
+            gap: 0.6em;
+            margin-bottom: 0.3em;
         }
 
         .yt-author {
             font-weight: 700;
-            font-size: 0.9em;
+            font-size: 0.95em;
             color: #0f0f0f;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
 
-        .yt-time { font-size: 0.75em; color: #606060; flex-shrink: 0; }
+        .yt-time { font-size: 0.8em; color: #606060; flex-shrink: 0; }
 
+        /* 留言內容：還原固定字體，防止破版 */
         .yt-text {
-            font-size: 0.88em;
-            line-height: 1.45em;
+            font-size: 1.1em;
+            line-height: 1.55em;
             color: #0f0f0f;
             word-break: break-word;
             white-space: pre-wrap;
-            font-weight: 400;
+            font-weight: 500;
+            margin: 8px 0;
+            max-height: 200px;
+            overflow-y: auto;
+            padding-right: 8px;
         }
 
+        .yt-text::-webkit-scrollbar { width: 6px; }
+        .yt-text::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .yt-text::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        /* 還原按讚回覆位置 */
         .yt-actions {
             display: flex;
             align-items: center;
-            gap: 1.2em;
-            margin-top: 0.7em;
+            gap: 1.5em;
+            margin-top: 0.8em;
             color: #0f0f0f;
         }
 
-        .yt-icon-btn { display: flex; align-items: center; gap: 0.5em; font-size: 0.72em; }
-        .yt-icon-btn i { font-size: 1.3em; }
+        .yt-icon-btn { display: flex; align-items: center; gap: 0.5em; font-size: 0.8em; }
+        .yt-icon-btn i { font-size: 1.4em; }
 
-        .winner-pop {
-            animation: winnerFadeIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        /* 得獎縮放效果 */
+        .winner-final-pop {
+            animation: winnerScale 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes winnerFadeIn {
-            0% { opacity: 0; transform: scale(0.95) translateY(20px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
+        @keyframes winnerScale {
+            0% { transform: scale(0.95); }
+            100% { transform: scale(1); }
         }
 
         .loading-ring {
@@ -209,8 +197,10 @@
     </style>
 </head>
 <body class="p-4 md:p-6 h-screen">
+    <!-- 隱藏畫布用於極速解碼 -->
+    <canvas id="preloadCanvas" width="100" height="100" style="display:none;"></canvas>
+
     <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6 h-full">
-        
         <!-- 左側設定區 -->
         <div class="w-full lg:w-80 flex flex-col gap-4 overflow-y-auto pr-1">
             <div class="sidebar-card p-5">
@@ -235,7 +225,6 @@
                 </div>
                 <input type="text" id="videoUrl" placeholder="YouTube 影片網址" 
                     class="w-full px-3 py-2 bg-gray-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-red-400 outline-none mb-3">
-                
                 <button id="fetchBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2">
                     <span id="fetchBtnText">同步留言數據</span>
                     <div id="fetchLoading" class="loading-ring hidden"></div>
@@ -264,16 +253,17 @@
                 </div>
 
                 <div id="videoPreview" class="hidden text-center">
-                    <div class="thumb-wrapper mb-4">
-                        <img id="videoThumb" src="" class="thumb-img">
+                    <div class="thumb-wrapper mb-4 max-w-sm mx-auto relative overflow-hidden rounded-xl shadow-lg bg-gray-100">
+                        <img id="videoThumb" src="" class="w-full h-auto object-cover">
                     </div>
                     <h2 id="videoTitle" class="text-lg font-bold text-gray-800 line-clamp-2 px-4 mb-2"></h2>
                     <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-green-50 text-green-600 rounded-full">
                          <i class="fa-solid fa-circle-check text-xs"></i>
-                         <span class="text-xs font-bold uppercase tracking-wider">留言同步成功，點擊下方開始開獎</span>
+                         <span class="text-xs font-bold uppercase">數據就緒</span>
                     </div>
                 </div>
 
+                <!-- 抽獎結果卡片 (還原排版) -->
                 <div id="winnerResult" class="hidden yt-comment-wrapper">
                     <div class="yt-avatar-container">
                         <img id="winnerImg" src="" class="yt-avatar">
@@ -287,35 +277,29 @@
                         </div>
                         <div id="winnerComment" class="yt-text"></div>
                         <div class="yt-actions">
-                            <div class="yt-icon-btn">
-                                <i class="fa-regular fa-thumbs-up"></i>
-                                <span id="winnerLikes">0</span>
-                            </div>
-                            <div class="yt-icon-btn">
-                                <i class="fa-regular fa-thumbs-down"></i>
-                            </div>
+                            <div class="yt-icon-btn"><i class="fa-regular fa-thumbs-up"></i><span id="winnerLikes">0</span></div>
+                            <div class="yt-icon-btn"><i class="fa-regular fa-thumbs-down"></i></div>
                             <div class="yt-icon-btn font-medium">回覆</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 底部控制區 -->
+            <!-- 控制區 -->
             <div class="bottom-control flex flex-col items-center">
                 <div class="w-full max-w-sm">
                     <button id="drawBtn" class="w-full bg-slate-900 hover:bg-black text-white font-black py-4 rounded-2xl text-xl shadow-xl transition-all active:scale-95 disabled:opacity-30">
                         開始開獎
                     </button>
                     <div class="flex flex-col gap-1 mt-3 text-center">
-                        <p id="poolInfo" class="text-[11px] text-gray-600 font-bold uppercase tracking-widest">抽獎池總數：0</p>
-                        <p id="duplicateInfo" class="text-[10px] text-gray-400 font-medium">已排除重複留言：0</p>
+                        <p id="poolInfo" class="text-[11px] text-gray-600 font-bold uppercase tracking-widest">抽獎池：0</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Alert Modal -->
+    <!-- Alert -->
     <div id="alertModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4">
         <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
             <p id="alertMsg" class="text-gray-700 font-bold mb-6 text-lg"></p>
@@ -329,17 +313,15 @@
         let memberIds = new Set();
         let finalPool = [];
         let currentVideoInfo = null;
+        let drawIntervalTimer = null;
+        const imgCache = new Map();
 
         function timeAgo(dateString) {
             const date = new Date(dateString);
             const now = new Date();
             const seconds = Math.floor((now - date) / 1000);
             if (isNaN(seconds)) return "1 天前";
-            let interval = Math.floor(seconds / 31536000);
-            if (interval >= 1) return interval + " 年前";
-            interval = Math.floor(seconds / 2592000);
-            if (interval >= 1) return interval + " 個月前";
-            interval = Math.floor(seconds / 86400);
+            let interval = Math.floor(seconds / 86400);
             if (interval >= 1) return interval + " 天前";
             interval = Math.floor(seconds / 3600);
             if (interval >= 1) return interval + " 小時前";
@@ -348,18 +330,25 @@
             return "幾秒前";
         }
 
-        function adjustLayoutSize(text) {
-            const containerWidth = document.getElementById('winnerContainer').offsetWidth;
-            const len = text.length;
-            let baseSize = 16; 
-            if (len <= 5) baseSize = 72;
-            else if (len <= 15) baseSize = 56;
-            else if (len <= 30) baseSize = 42;
-            else if (len <= 60) baseSize = 32;
-            else baseSize = 26;
-            if (containerWidth < 500) baseSize = baseSize * 0.6;
-            else if (containerWidth < 800) baseSize = baseSize * 0.8;
-            return baseSize;
+        // 強力預解碼頭像，解決慢半拍問題
+        async function forcePreloadAvatars(comments) {
+            const ctx = document.getElementById('preloadCanvas').getContext('2d');
+            const limit = Math.min(comments.length, 200); 
+            
+            const promises = comments.slice(0, limit).map(c => {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.crossOrigin = "anonymous";
+                    img.onload = () => {
+                        ctx.drawImage(img, 0, 0, 1, 1);
+                        imgCache.set(c.id, img.src);
+                        resolve();
+                    };
+                    img.onerror = () => resolve();
+                    img.src = c.img;
+                });
+            });
+            await Promise.all(promises);
         }
 
         document.getElementById('csvFile').addEventListener('change', (e) => {
@@ -374,9 +363,8 @@
                     const match = row.match(/UC[a-zA-Z0-9_-]{22}/);
                     if (match) memberIds.add(match[0]);
                 });
-                const status = document.getElementById('memberStatus');
-                status.innerText = `✅ 已導入 ${memberIds.size} 位 VIP 名單`;
-                status.classList.remove('hidden');
+                document.getElementById('memberStatus').innerText = `✅ 已導入 ${memberIds.size} 位 VIP 名單`;
+                document.getElementById('memberStatus').classList.remove('hidden');
                 calculatePool();
             };
             reader.readAsText(file);
@@ -384,55 +372,62 @@
 
         document.getElementById('fetchBtn').addEventListener('click', async () => {
             const url = document.getElementById('videoUrl').value.trim();
-            const videoId = getYouTubeID(url);
-            if (!videoId) { showMsg('請輸入正確的 YouTube 網址'); return; }
+            const match = url.match(/^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?)|(shorts\/)|(live\/))\??v?=?([^#&?]*).*/);
+            const videoId = (match && match[9].length === 11) ? match[9] : null;
+            if (!videoId) return showMsg('請輸入正確的影片網址');
+
+            if (drawIntervalTimer) { clearInterval(drawIntervalTimer); drawIntervalTimer = null; }
+            document.getElementById('winnerResult').classList.add('hidden');
+            document.getElementById('videoPreview').classList.add('hidden');
+            document.getElementById('idleState').classList.remove('hidden');
 
             setFetchLoading(true);
             rawComments = [];
+            imgCache.clear();
+
             try {
-                const videoDataResponse = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${YOUTUBE_API_KEY}`);
-                const videoData = await videoDataResponse.json();
-                if (videoData.items && videoData.items.length > 0) {
-                    const snippet = videoData.items[0].snippet;
+                const vRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${YOUTUBE_API_KEY}`);
+                const vData = await vRes.json();
+                if (vData.items?.[0]) {
+                    const snip = vData.items[0].snippet;
                     currentVideoInfo = {
-                        title: snippet.title,
-                        thumb: snippet.thumbnails.maxres ? snippet.thumbnails.maxres.url : snippet.thumbnails.high.url
+                        title: snip.title,
+                        thumb: snip.thumbnails.maxres?.url || snip.thumbnails.high.url
                     };
-                    showVideoPreview();
                 }
 
                 let pageToken = '';
                 do {
-                    const ytApiUrl = `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=100&pageToken=${pageToken}&key=${YOUTUBE_API_KEY}`;
-                    const response = await fetch(ytApiUrl);
-                    const data = await response.json();
-                    if (data.error) throw new Error(data.error.message);
-                    if (data.items) {
-                        data.items.forEach(item => {
-                            const c = item.snippet.topLevelComment.snippet;
-                            rawComments.push({
-                                id: c.authorChannelId.value,
-                                name: c.authorDisplayName,
-                                img: c.authorProfileImageUrl,
-                                text: c.textOriginal,
-                                likes: c.likeCount || 0,
-                                publishedAt: c.publishedAt
-                            });
+                    const cRes = await fetch(`https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=100&pageToken=${pageToken}&key=${YOUTUBE_API_KEY}`);
+                    const cData = await cRes.json();
+                    if (cData.error) throw new Error(cData.error.message);
+                    cData.items?.forEach(item => {
+                        const c = item.snippet.topLevelComment.snippet;
+                        rawComments.push({
+                            id: c.authorChannelId.value,
+                            name: c.authorDisplayName,
+                            img: c.authorProfileImageUrl,
+                            text: c.textOriginal,
+                            likes: c.likeCount || 0,
+                            publishedAt: c.publishedAt
                         });
-                    }
-                    pageToken = data.nextPageToken || '';
+                    });
+                    pageToken = cData.nextPageToken || '';
                 } while (pageToken);
 
-                document.getElementById('fetchStatus').innerText = `同步完成：${rawComments.length} 則留言`;
                 calculatePool();
-            } catch (e) { showMsg('同步失敗：' + e.message); } finally { setFetchLoading(false); }
-        });
+                await forcePreloadAvatars(finalPool);
+                
+                document.getElementById('fetchStatus').innerText = `已同步 ${rawComments.length} 則留言`;
+                if(currentVideoInfo) {
+                    document.getElementById('idleState').classList.add('hidden');
+                    document.getElementById('videoPreview').classList.remove('hidden');
+                    document.getElementById('videoThumb').src = currentVideoInfo.thumb;
+                    document.getElementById('videoTitle').innerText = currentVideoInfo.title;
+                }
 
-        function getYouTubeID(url) {
-            const reg = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?)|(shorts\/)|(live\/))\??v?=?([^#&?]*).*/;
-            const match = url.match(reg);
-            return (match && match[9].length === 11) ? match[9] : null;
-        }
+            } catch (e) { showMsg('失敗：' + e.message); } finally { setFetchLoading(false); }
+        });
 
         function setFetchLoading(l) {
             document.getElementById('fetchBtnText').classList.toggle('hidden', l);
@@ -440,82 +435,63 @@
             document.getElementById('fetchBtn').disabled = l;
         }
 
-        function showVideoPreview() {
-            document.getElementById('idleState').classList.add('hidden');
-            document.getElementById('winnerResult').classList.add('hidden');
-            const preview = document.getElementById('videoPreview');
-            preview.classList.remove('hidden');
-            document.getElementById('videoThumb').src = currentVideoInfo.thumb;
-            document.getElementById('videoTitle').innerText = currentVideoInfo.title;
-        }
-
         function calculatePool() {
             const kw = document.getElementById('keyword').value.trim().toLowerCase();
             const filtered = kw ? rawComments.filter(c => c.text.toLowerCase().includes(kw)) : rawComments;
             const seen = new Set();
             finalPool = [];
-            let duplicateCount = 0;
-
             filtered.forEach(c => {
-                if (!seen.has(c.id)) {
-                    seen.add(c.id);
-                    finalPool.push(c);
-                } else {
-                    duplicateCount++;
-                }
+                if (!seen.has(c.id)) { seen.add(c.id); finalPool.push(c); }
             });
-            
-            document.getElementById('poolInfo').innerText = `抽獎池總數：${finalPool.length}`;
-            document.getElementById('duplicateInfo').innerText = `已排除重複留言：${duplicateCount}`;
+            document.getElementById('poolInfo').innerText = `抽獎池：${finalPool.length}`;
         }
 
         document.getElementById('drawBtn').addEventListener('click', () => {
-            if (!finalPool.length) return showMsg('請先完成留言同步');
+            if (!finalPool.length) return showMsg('請先同步留言');
             
             document.getElementById('videoPreview').classList.add('hidden');
-            
+            const res = document.getElementById('winnerResult');
+            res.classList.remove('winner-final-pop');
+            res.classList.add('drawing-active');
+
             const btn = document.getElementById('drawBtn');
             btn.disabled = true;
-            btn.innerText = '正在尋找幸運兒...';
+            btn.innerText = '開獎中...';
 
-            // 修復切換分頁會卡住的問題：改用時間來判斷，不再依賴 setInterval 的執行次數
             const startTime = Date.now();
-            const duration = 2000; // 動畫持續 2 秒鐘
+            const duration = 2500; 
 
-            const t = setInterval(() => {
+            drawIntervalTimer = setInterval(() => {
                 const randomOne = finalPool[Math.floor(Math.random() * finalPool.length)];
                 renderWinner(randomOne, false);
                 
-                // 改為檢查真實經過的時間，確保即使瀏覽器暫停計時器也不會卡住
                 if (Date.now() - startTime >= duration) {
-                    clearInterval(t);
+                    clearInterval(drawIntervalTimer);
+                    drawIntervalTimer = null;
+                    res.classList.remove('drawing-active');
                     const finalWinner = finalPool[Math.floor(Math.random() * finalPool.length)];
                     renderWinner(finalWinner, true);
                     btn.disabled = false;
                     btn.innerText = '再次開獎';
                 }
-            }, 80);
+            }, 100);
         });
 
         function renderWinner(w, isFinal) {
-            document.getElementById('idleState').classList.add('hidden');
             const res = document.getElementById('winnerResult');
             res.classList.remove('hidden');
+            document.getElementById('idleState').classList.add('hidden');
+            document.getElementById('videoPreview').classList.add('hidden');
             
-            const newFontSize = adjustLayoutSize(w.text);
-            res.style.fontSize = `${newFontSize}px`;
-
             const badge = document.getElementById('statusBadge');
             
             if (isFinal) {
-                res.classList.remove('winner-pop');
-                void res.offsetWidth; 
-                res.classList.add('winner-pop');
-
-                badge.classList.remove('hidden', 'badge-vip', 'badge-subscribed', 'badge-pop-anim', 'vip-pop-anim');
+                res.classList.add('winner-final-pop');
+                badge.classList.remove('hidden', 'badge-vip', 'badge-subscribed', 'badge-pop-anim');
+                void badge.offsetWidth; 
                 if (memberIds.has(w.id)) {
                     badge.innerText = 'VIP';
-                    badge.classList.add('badge-vip', 'vip-pop-anim');
+                    badge.classList.add('badge-vip', 'badge-pop-anim');
                 } else {
                     badge.innerText = '已訂閱';
                     badge.classList.add('badge-subscribed', 'badge-pop-anim');
@@ -524,11 +500,13 @@
                 badge.classList.add('hidden');
             }
 
-            document.getElementById('winnerImg').src = w.img;
+            // 直接切換 Src，透過之前的 Cache 保證零延遲
+            document.getElementById('winnerImg').src = imgCache.get(w.id) || w.img;
             document.getElementById('winnerName').innerText = w.name;
             document.getElementById('winnerLikes').innerText = w.likes;
             document.getElementById('winnerTime').innerText = `• ${timeAgo(w.publishedAt)}`;
             document.getElementById('winnerComment').innerText = w.text;
+            document.getElementById('winnerComment').scrollTop = 0;
         }
 
         function showMsg(m) {
@@ -541,6 +519,5 @@
     </script>
 </body>
 </html>
-
 
 ```
