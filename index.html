@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -14,6 +15,7 @@
             background-color: #f1f5f9;
             height: 100vh;
             overflow: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
         .sidebar-card {
@@ -27,6 +29,7 @@
             background: white;
             border-radius: 24px;
             box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1);
+            position: relative;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -36,6 +39,7 @@
         #winnerContainer {
             flex: 1;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             width: 100%;
@@ -44,7 +48,33 @@
             background: #fff;
         }
 
-        /* 恢復您滿意的大型卡片佈局 */
+        /* 影片預覽封面：大方且精緻 */
+        #videoPreview {
+            width: 100%;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .thumb-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 520px;
+            aspect-ratio: 16 / 9;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px -10px rgba(0,0,0,0.25);
+            background: #f1f5f9;
+            border: 4px solid #fff;
+            margin: 0 auto;
+        }
+
+        .thumb-img {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+        }
+
+        /* 留言卡片：還原寬版格子設計，解決超模 */
         .yt-comment-wrapper {
             display: flex;
             align-items: flex-start;
@@ -56,13 +86,13 @@
             border-radius: 20px;
             padding: 28px 32px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
-            transition: transform 0.05s ease-out;
+            margin: auto;
             position: relative;
         }
 
-        /* 純垂直跳動，絕不旋轉，不暈眩 */
+        /* 純垂直跳動，絕不旋轉 */
         .drawing-active {
-            animation: drawBounce 0.1s infinite alternate cubic-bezier(0.45, 0.05, 0.55, 0.95);
+            animation: drawBounce 0.08s infinite alternate ease-in-out;
         }
 
         @keyframes drawBounce {
@@ -83,19 +113,19 @@
             border: 2px solid #f1f5f9;
         }
 
-        /* 身份標籤：得獎時顯現，且縮放比例正確 */
+        /* 身份標籤：純放大 1.6 倍，非常顯眼 */
         .status-badge {
             position: absolute;
-            bottom: -0.4em;
+            bottom: -0.5em;
             left: 50%;
             transform: translateX(-50%) scale(1.6);
             color: white;
             font-size: 0.5em;
             font-weight: 900;
-            padding: 0.25em 1.2em;
+            padding: 0.3em 1.2em;
             border-radius: 2em;
             white-space: nowrap;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
             border: 1.5px solid #fff;
             z-index: 20;
         }
@@ -135,6 +165,7 @@
 
         .yt-time { font-size: 0.8em; color: #606060; }
 
+        /* 固定字體大小，保持排版一致 */
         .yt-text {
             font-size: 1.1em;
             line-height: 1.55em;
@@ -145,8 +176,14 @@
             margin: 8px 0;
             max-height: 200px;
             overflow-y: auto;
+            padding-right: 8px;
         }
 
+        .yt-text::-webkit-scrollbar { width: 6px; }
+        .yt-text::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .yt-text::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        /* 還原按讚回覆位置 */
         .yt-actions {
             display: flex;
             align-items: center;
@@ -161,12 +198,15 @@
         .winner-final-pop {
             animation: winnerScale 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             border-color: #ffca28;
+            box-shadow: 0 15px 35px -5px rgba(255, 202, 40, 0.25);
         }
 
         @keyframes winnerScale {
             0% { transform: scale(0.95); }
             100% { transform: scale(1); }
         }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .bottom-control {
             border-top: 1px solid #f1f5f9;
@@ -185,6 +225,7 @@
     </style>
 </head>
 <body class="p-4 md:p-6 h-screen">
+    <!-- 隱藏畫布：強制瀏覽器預先解碼圖片，解決頭像慢半拍 -->
     <canvas id="preloadCanvas" width="100" height="100" style="display:none;"></canvas>
 
     <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6 h-full">
@@ -208,12 +249,12 @@
             <div class="sidebar-card p-5">
                 <div class="flex items-center gap-2 mb-3 text-red-500 font-bold">
                     <i class="fa-brands fa-youtube"></i>
-                    <span>2. 影片留言</span>
+                    <span>2. 抓取影片留言</span>
                 </div>
                 <input type="text" id="videoUrl" placeholder="輸入 YouTube 網址" 
                     class="w-full px-3 py-2 bg-gray-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-red-400 outline-none mb-3">
                 <button id="fetchBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2">
-                    <span id="fetchBtnText">同步 YouTube 數據</span>
+                    <span id="fetchBtnText">同步 YouTube 留言</span>
                     <div id="fetchLoading" class="loading-spin hidden"></div>
                 </button>
                 <p id="fetchStatus" class="mt-2 text-[11px] text-gray-400 font-medium text-center"></p>
@@ -222,7 +263,7 @@
             <div class="sidebar-card p-5">
                 <div class="flex items-center gap-2 mb-3 text-purple-500 font-bold">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <span>3. 條件過濾</span>
+                    <span>3. 其他篩選</span>
                 </div>
                 <input type="text" id="keyword" placeholder="包含關鍵字 (選填)" 
                     class="w-full px-3 py-2 bg-gray-100 border-none rounded-lg text-sm focus:ring-2 focus:ring-purple-400 outline-none">
@@ -232,13 +273,28 @@
         <!-- 右側展示區 -->
         <div class="flex-1 main-display">
             <div id="winnerContainer">
-                <div id="idleState" class="text-center">
+                
+                <!-- 初始狀態 -->
+                <div id="idleState" class="text-center w-full">
                     <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="fa-solid fa-trophy text-gray-200 text-2xl"></i>
                     </div>
                     <p class="text-gray-400 font-bold text-sm">請輸入網址並同步留言</p>
                 </div>
 
+                <!-- 影片載入成功的封面預覽 -->
+                <div id="videoPreview" class="hidden text-center w-full">
+                    <div class="thumb-wrapper mb-5">
+                        <img id="videoThumb" src="" class="thumb-img">
+                    </div>
+                    <h2 id="videoTitle" class="text-xl font-bold text-gray-800 line-clamp-2 px-4 mb-3"></h2>
+                    <div class="inline-flex items-center gap-2 px-5 py-2 bg-green-50 text-green-700 border border-green-200 rounded-full shadow-sm">
+                         <i class="fa-solid fa-circle-check text-sm"></i>
+                         <span class="text-sm font-bold uppercase tracking-wider">數據已就緒，可開始開獎</span>
+                    </div>
+                </div>
+
+                <!-- 抽獎卡片 (排版已鎖死，不會超模) -->
                 <div id="winnerResult" class="hidden yt-comment-wrapper">
                     <div class="yt-avatar-container">
                         <img id="winnerImg" src="" class="yt-avatar">
@@ -258,24 +314,36 @@
                         </div>
                     </div>
                 </div>
+
             </div>
 
-            <div class="bottom-control flex flex-col items-center">
-                <div class="w-full max-w-sm text-center">
-                    <button id="drawBtn" class="w-full bg-black text-white font-black py-4 rounded-2xl text-xl shadow-xl transition-all active:scale-95 disabled:opacity-30">
+            <!-- 控制區 -->
+            <div class="bottom-control">
+                <div class="w-full max-w-sm mx-auto text-center">
+                    <button id="drawBtn" class="w-full bg-black hover:bg-gray-900 text-white font-black py-4 rounded-2xl text-xl shadow-xl transition-all active:scale-95 disabled:opacity-30">
                         開始開獎
                     </button>
-                    <p id="poolInfo" class="mt-3 text-[11px] text-gray-500 font-bold uppercase tracking-widest">抽獎池：0</p>
+                    <p id="poolInfo" class="mt-3 text-[11px] text-gray-500 font-bold uppercase tracking-widest">目前抽獎池：0</p>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Alert -->
+    <div id="alertModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
+            <p id="alertMsg" class="text-gray-700 font-bold mb-6 text-lg"></p>
+            <button onclick="closeAlert()" class="w-full bg-gray-900 text-white font-bold py-3 rounded-xl">了解</button>
+        </div>
+    </div>
+
     <script>
+        // User context code: @@@@@83000000723654F5D7A1332D29F429C8FFA380459D7C2D9CAECAD08C953B88BF729CB15855FAE9F21F2416FF8801A03F8457E048804CD0BFA906B5E48F81BE4936DAB69484F3C7909B241F40FBC18D2D2301B38A4BCBD2FF36D8E928927052CDBFF39C5224E9651B15CFC14C9019CDCFE2853787506CEC408A7C302756CA5882B06DF76310503377CF2867F5CE2BBDBAC82DF0DA#####
         const API_KEY = 'AIzaSyAYQnHhRUEewqTVDZmeTxV6hRXZFt_ZWtY';
         let rawComments = [];
         let memberIds = new Set();
         let finalPool = [];
+        let currentVideoInfo = null;
         let drawIntervalTimer = null;
         const imgCache = new Map();
 
@@ -291,9 +359,21 @@
             return "幾分鐘前";
         }
 
-        async function preloadAvatars(comments) {
+        // 強格控制畫面顯示狀態，確保不重疊
+        function setDisplayState(state) {
+            document.getElementById('idleState').classList.add('hidden');
+            document.getElementById('videoPreview').classList.add('hidden');
+            document.getElementById('winnerResult').classList.add('hidden');
+
+            if (state === 'idle') document.getElementById('idleState').classList.remove('hidden');
+            if (state === 'preview') document.getElementById('videoPreview').classList.remove('hidden');
+            if (state === 'winner') document.getElementById('winnerResult').classList.remove('hidden');
+        }
+
+        async function forcePreloadAvatars(comments) {
             const ctx = document.getElementById('preloadCanvas').getContext('2d');
-            const promises = comments.slice(0, 300).map(c => {
+            const limit = Math.min(comments.length, 250); 
+            const promises = comments.slice(0, limit).map(c => {
                 return new Promise((resolve) => {
                     const img = new Image();
                     img.crossOrigin = "anonymous";
@@ -332,39 +412,63 @@
             const url = document.getElementById('videoUrl').value.trim();
             const match = url.match(/^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?)|(shorts\/)|(live\/))\??v?=?([^#&?]*).*/);
             const videoId = (match && match[9].length === 11) ? match[9] : null;
-            if (!videoId) return alert('請輸入正確影片網址');
+            if (!videoId) return showMsg('請輸入正確影片網址');
 
+            if (drawIntervalTimer) { clearInterval(drawIntervalTimer); drawIntervalTimer = null; }
+            setDisplayState('idle'); // 讀取時切回預設狀態
             setLoading(true);
             rawComments = [];
             imgCache.clear();
 
             try {
+                // 1. 抓取封面資訊
+                const vRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${API_KEY}`);
+                const vData = await vRes.json();
+                if (vData.items && vData.items.length > 0) {
+                    const snip = vData.items[0].snippet;
+                    currentVideoInfo = {
+                        title: snip.title,
+                        thumb: snip.thumbnails.maxres?.url || snip.thumbnails.high.url
+                    };
+                }
+
+                // 2. 抓取留言
                 let pageToken = '';
                 do {
-                    const res = await fetch(`https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=100&pageToken=${pageToken}&key=${API_KEY}`);
-                    const data = await res.json();
-                    if (data.error) throw new Error(data.error.message);
-                    data.items?.forEach(item => {
-                        const c = item.snippet.topLevelComment.snippet;
-                        rawComments.push({
-                            id: c.authorChannelId.value,
-                            name: c.authorDisplayName,
-                            img: c.authorProfileImageUrl,
-                            text: c.textOriginal,
-                            likes: c.likeCount || 0,
-                            publishedAt: c.publishedAt
+                    const cRes = await fetch(`https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=100&pageToken=${pageToken}&key=${API_KEY}`);
+                    const cData = await cRes.json();
+                    if (cData.error) throw new Error(cData.error.message);
+                    
+                    if (cData.items) {
+                        cData.items.forEach(item => {
+                            const c = item.snippet.topLevelComment.snippet;
+                            rawComments.push({
+                                id: c.authorChannelId.value,
+                                name: c.authorDisplayName,
+                                img: c.authorProfileImageUrl,
+                                text: c.textOriginal,
+                                likes: c.likeCount || 0,
+                                publishedAt: c.publishedAt
+                            });
                         });
-                    });
-                    pageToken = data.nextPageToken || '';
+                    }
+                    pageToken = cData.nextPageToken || '';
                 } while (pageToken);
 
                 calculatePool();
-                await preloadAvatars(finalPool);
+                await forcePreloadAvatars(finalPool);
+                
                 document.getElementById('fetchStatus').innerText = `已同步 ${rawComments.length} 則留言`;
-                document.getElementById('idleState').classList.remove('hidden');
-                document.getElementById('winnerResult').classList.add('hidden');
+                
+                // 3. 顯示封面預覽
+                if(currentVideoInfo) {
+                    document.getElementById('videoThumb').src = currentVideoInfo.thumb;
+                    document.getElementById('videoTitle').innerText = currentVideoInfo.title;
+                    setDisplayState('preview');
+                }
+
             } catch (e) {
-                alert('抓取失敗：' + e.message);
+                showMsg('抓取失敗：' + e.message);
             } finally {
                 setLoading(false);
             }
@@ -384,20 +488,22 @@
             filtered.forEach(c => {
                 if (!seen.has(c.id)) { seen.add(c.id); finalPool.push(c); }
             });
-            document.getElementById('poolInfo').innerText = `抽獎池：${finalPool.length}`;
+            document.getElementById('poolInfo').innerText = `目前抽獎池：${finalPool.length}`;
         }
 
         document.getElementById('drawBtn').addEventListener('click', () => {
-            if (!finalPool.length) return;
+            if (!finalPool.length) return showMsg('請先完成同步數據');
+            
+            // 切換畫面：強制隱藏封面，顯示留言卡片
+            setDisplayState('winner');
             
             const res = document.getElementById('winnerResult');
-            res.classList.remove('winner-final-pop', 'hidden');
+            res.classList.remove('winner-final-pop');
             res.classList.add('drawing-active');
-            document.getElementById('idleState').classList.add('hidden');
 
             const btn = document.getElementById('drawBtn');
             btn.disabled = true;
-            btn.innerText = '正在抽獎...';
+            btn.innerText = '抽獎中...';
 
             const startTime = Date.now();
             const duration = 2200; 
@@ -425,6 +531,7 @@
                 res.classList.add('winner-final-pop');
                 badge.classList.remove('hidden', 'badge-vip', 'badge-subscribed', 'badge-pop-anim');
                 void badge.offsetWidth; 
+                
                 if (memberIds.has(w.id)) {
                     badge.innerText = 'VIP';
                     badge.classList.add('badge-vip', 'badge-pop-anim');
@@ -441,8 +548,19 @@
             document.getElementById('winnerLikes').innerText = w.likes;
             document.getElementById('winnerTime').innerText = `• ${timeAgo(w.publishedAt)}`;
             document.getElementById('winnerComment').innerText = w.text;
+            document.getElementById('winnerComment').scrollTop = 0;
+        }
+
+        function showMsg(m) {
+            document.getElementById('alertMsg').innerText = m;
+            document.getElementById('alertModal').classList.replace('hidden', 'flex');
+        }
+        function closeAlert() {
+            document.getElementById('alertModal').classList.replace('flex', 'hidden');
         }
     </script>
 </body>
 </html>
 
+
+```
