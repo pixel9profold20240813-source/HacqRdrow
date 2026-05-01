@@ -89,9 +89,9 @@
             position: relative;
         }
 
-        /* 純垂直跳動，絕不旋轉 */
+        /* 純垂直跳動，絕不旋轉，並加快震動頻率 */
         .drawing-active {
-            animation: drawBounce 0.08s infinite alternate ease-in-out;
+            animation: drawBounce 0.04s infinite alternate ease-in-out;
         }
 
         @keyframes drawBounce {
@@ -505,7 +505,7 @@
             btn.innerText = '抽獎中...';
 
             const startTime = Date.now();
-            const duration = 2200; 
+            const duration = 1500; // 將總等待時間縮短至 1.5 秒
 
             drawIntervalTimer = setInterval(() => {
                 const randomOne = finalPool[Math.floor(Math.random() * finalPool.length)];
@@ -519,7 +519,7 @@
                     btn.disabled = false;
                     btn.innerText = '再次開獎';
                 }
-            }, 100);
+            }, 40); // 將切換速度加快，每 40 毫秒閃爍一次
         });
 
         function renderWinner(w, isFinal) {
